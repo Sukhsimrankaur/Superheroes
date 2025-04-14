@@ -85,6 +85,8 @@ endif;
 
         <label for="category_id">Category</label>
         <select name="category_id" id="category_id" required>
+
+    
             <?php
             // Fetch categories from the database
             $query = 'SELECT * FROM categories';

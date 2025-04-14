@@ -50,7 +50,6 @@ $heroes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             <!-- View and Comment buttons -->
                             <a href="cms.php?id=<?= $hero['superhero_id'] ?>" class="btn btn-primary">View Profile</a>
-                            <a href="comment_form.php?hero_id=<?= $hero['superhero_id'] ?>&category_id=<?= $hero['category_id'] ?>" class="btn btn-secondary mt-2">Comment</a>
 
                         </div>
                     </div>
