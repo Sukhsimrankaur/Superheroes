@@ -1,12 +1,12 @@
 <?php
 session_start();
 
-// Destroy all session variables
-session_unset();
+// Optional: save logout time for shared access
+file_put_contents("logout_flag.txt", time());
 
-// Destroy the session
+session_unset();
 session_destroy();
 
-// Redirect to the login page
-header('Location: login.php');
+header("Location: login.php");
 exit();
+

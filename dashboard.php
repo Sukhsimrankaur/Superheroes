@@ -1,39 +1,46 @@
 <?php
-session_start(); // Start the session
+session_start(); 
 
-// Define session timeout duration (5 minutes)
-define('SESSION_TIMEOUT', 300); // 300 seconds = 5 minutes
+define('SESSION_TIMEOUT', 300); // 5 minutes
 
-// Check if the user is logged in
+// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
 
-// Display sucess message if available
+// 🔒 CHECK FOR SESSION TIMEOUT
+if (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT) {
+    session_unset();
+    session_destroy();
+    header('Location: login.php');
+    exit();
+} else {
+    $_SESSION['last_activity'] = time();
+}
+
+// 🔒 CHECK FOR CROSS-TAB LOGOUT
+$logout_time = file_exists('logout_flag.txt') ? (int)file_get_contents('logout_flag.txt') : 0;
+
+if (isset($_SESSION['login_time']) && $_SESSION['login_time'] < $logout_time) {
+    session_unset();
+    session_destroy();
+    header('Location: login.php');
+    exit();
+}
+
+// 🔒 REDIRECT NON-ADMINS
+if ($_SESSION['user_role'] !== 'admin') {
+    header('Location: index.php');
+    exit();
+}
+
+// ✅ Success message (show once)
 if (isset($_SESSION['login_success'])) {
     echo '<div id="success-message" style="color: green; font-weight: bold;">' . $_SESSION['login_success'] . '</div>';
     unset($_SESSION['login_success']);
 }
 
-
-// Check if session has expired
-if (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT) {
-    session_unset(); // Unset all session variables
-    session_destroy(); // Destroy the session
-    header('Location: login.php'); // Redirect to login
-    exit();
-} else {
-    $_SESSION['last_activity'] = time(); // Update last activity time
-
-    // Continue with the dashboard logic
-    // If admin, show the dashboard, else redirect
-    if ($_SESSION['user_role'] !== 'admin') {
-        header('Location: index.php');
-        exit();
-    }
-}
-?>
 
 <?php
 require('db.php');

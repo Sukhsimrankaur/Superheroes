@@ -1,18 +1,31 @@
 <?php
-// Start the session at the very beginning of the script
 session_start();
+require 'db.php'; // database connection
 
-// Admin login credentials
-define('ADMIN_LOGIN', 'wally');
-define('ADMIN_PASSWORD', 'mypass');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-// Check if the user is logged in or if authentication headers are not set
-if (!isset($_SESSION['user_id']) &&
-    (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) ||
-     $_SERVER['PHP_AUTH_USER'] !== ADMIN_LOGIN || $_SERVER['PHP_AUTH_PW'] !== ADMIN_PASSWORD)) {
-    // If not authenticated, force a login popup using HTTP Basic Authentication
-    header('HTTP/1.1 401 Unauthorized');
-    header('WWW-Authenticate: Basic realm="Superhero Database"');
-    exit("Access Denied: Username and password required.");
+    // Fetch admin from database
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['password'])) {
+        // ✅ CREDENTIALS ARE VALID — SET SESSION
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['user_role'] = $user['role']; // Should be 'admin'
+        $_SESSION['last_activity'] = time();
+        $_SESSION['login_time'] = time(); // 🔐 Needed for logout sync across tabs
+
+        $_SESSION['login_success'] = "Welcome back, Admin!";
+        header('Location: dashboard.php');
+        exit();
+    } else {
+        // ❌ Invalid login
+        $_SESSION['error'] = "Invalid username or password.";
+        header('Location: login.php');
+        exit();
+    }
 }
 ?>
