@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
                 // Assuming role is passed via a form or you have logic to define it
-                $role = isset($_POST['role']) ? $_POST['role'] : ''; // Dynamically set the role (e.g., 'admin', 'user')
+$role = 'user'; // Automatically assign 'user' role to new registrations
 
                 // Prepare the query to insert user data into the database
                 $query = "INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)";
