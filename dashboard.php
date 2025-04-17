@@ -1,7 +1,7 @@
 <?php
 session_start(); 
 
-define('SESSION_TIMEOUT', 300); // 5 minutes
+define('SESSION_TIMEOUT', 500); // 8 minutes
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
@@ -407,7 +407,7 @@ if (isset($_GET['delete_superhero'])) {
     </style>
 </head>
 <body>
-    <h1>Welcome to the Dashboard, <?= htmlspecialchars($_SESSION['username']) ?>!</h1>
+    <h1>Welcome to the Dashboard</h1>
 
 <!-- JavaScript to hide the success message after 35 seconds -->
 <script>

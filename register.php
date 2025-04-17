@@ -106,12 +106,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="confirm_password">Confirm Password:</label>
         <input type="password" id="confirm_password" name="confirm_password" required>
 
-        <label for="role">Select Role:</label>
+       <!-- <label for="role">Select Role:</label>
 <select name="role" id="role" required>
     <option value="">-- Select Role --</option>
     <option value="admin">Admin</option>
     <option value="user">User</option>
-</select>
+</select>-->
 
         <button type="submit">Register</button>
     </form>

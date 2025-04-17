@@ -1,9 +1,9 @@
 <?php
-session_start(); // Start the session
-require 'db.php';
+session_start();
+require 'db.php'; // Include the database connection file
 
-$error = ''; // Variable to hold error messages
-$success = ''; // Variable to hold success messages
+$error = ''; // Initialize error message variable
+$success = ''; 
 
 // Check if the user is already logged in
 if (isset($_SESSION['user_id'])) {
@@ -11,52 +11,47 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Check if the form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Sanitize input to prevent XSS attacks
     $username = htmlspecialchars(trim($_POST['username']));
-    $password = trim($_POST['password']); // No need to sanitize password
+    $password = trim($_POST['password']);
 
-    try {
-        // Prepare the query to fetch user data by username
-        $query = 'SELECT * FROM users WHERE username = :username LIMIT 1';
-        $statement = $db->prepare($query);
-        $statement->bindParam(':username', $username, PDO::PARAM_STR);
-        $statement->execute();
-        $user = $statement->fetch(PDO::FETCH_ASSOC); // Get the user data
+    // Check for general admin login credentials
+    if ($username === 'admin' && $password === 'admin123') {
+        // Set session variables for general admin login
+        $_SESSION['user_id'] = 1; // Set a generic ID for this general admin (use the actual user ID in production)
+        $_SESSION['user_role'] = 'admin'; // Set the role to admin
+        $_SESSION['last_activity'] = time(); // Store last activity time
+        $_SESSION['login_time'] = time(); // Set login time for tracking
 
-        // Check if the user exists and password is correct
-        if ($user && password_verify($password, $user['password_hash'])) {
-            // Check if the user is an admin
-            if ($user['role'] !== 'admin') {
-                $error = "Access denied. Only admins can log in.";
-            } else {
-                // Successful login, store user data in session variables
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['user_role'] = $user['role']; // Optional: role for access control
-                $_SESSION['last_activity'] = time(); // Store the last activity time
+        // Redirect to dashboard
+        header('Location: dashboard.php');
+        exit();
+    }
 
-                session_regenerate_id(true); // Regenerate session ID to prevent session fixation
+    // Check if username exists and the password is correct
+    $query = 'SELECT * FROM users WHERE username = :username LIMIT 1';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Set sucess message
-                $_SESSION['login_success'] = 'Login sucessful! Welcome to the dashboard.';
-                
-                // Redirect the user to the dashboard page after a brief message
-                header('Location: dashboard.php');
-                exit();
-            }
-        } else {
-            // Invalid credentials, display error message
-            $error = 'Invalid username or password.';
-        }
-    } catch (PDOException $e) {
-        // Database error, handle it
-        $error = 'Database error: ' . $e->getMessage();
+    if ($user && password_verify($password, $user['password_hash'])) {
+        // Successful login
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['last_activity'] = time();
+        $_SESSION['login_time'] = time();
+
+        // Redirect to the dashboard
+        header('Location: dashboard.php');
+        exit();
+    } else {
+        // Invalid login
+        $error = 'Invalid username or password.';
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -67,16 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login</title>
 </head>
 <body>
-    <h1>Admin Login</h1>
-     <nav style="text-align: center;">
-    <a href="index.php" style="text-decoration: none; color: white;">Home</a>
-</nav>
+    <h1>Login</h1>
+    <nav style="text-align: center;">
+        <a href="index.php" style="text-decoration: none; color: white;">Home</a>
+    </nav>
 
-
-    <!-- Display error message if login fails -->
+    <!-- Show error message if login fails -->
     <?php if (!empty($error)): ?>
         <div class="error-message">
-            <p style="color: black;"><?= htmlspecialchars($error) ?></p>
+            <p style="color: red;"><?= htmlspecialchars($error) ?></p>
         </div>
     <?php endif; ?>
 
@@ -91,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit">Login</button>
     </form>
 
-    <!-- Link to the registration page if the user doesn't have an account -->
     <p>Don't have an account? <a href="register.php" style="color: blue; font-weight: bold; text-decoration: none;">Register here</a>.</p>
+
 </body>
 </html>
