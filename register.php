@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
                 // Assuming role is passed via a form or you have logic to define it
-$role = 'user'; // Automatically assign 'user' role to new registrations
+                $role = 'user'; // Automatically assign 'user' role to new registrations
 
                 // Prepare the query to insert user data into the database
                 $query = "INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)";
@@ -76,14 +76,23 @@ $role = 'user'; // Automatically assign 'user' role to new registrations
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" type="text/css" href="main.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
 
     <title>Register</title>
 </head>
 <body>
     <h1>Register</h1>
-     <nav style="text-align: center;">
-    <a href="index.php" style="text-decoration: none; color: white;">Home</a>
-</nav>
+     <nav class="d-flex justify-content-between">
+            <div>
+                <a href="index.php" id="home" class="mx-3">Home</a>
+                <a href="category_menu.php">Search</a>
+            </div>
+            <div>
+                <a href="register.php">Register</a>
+                <a href="login.php" class="mx-3">Admin Login</a>
+            </div>
+        </nav>
 
     <!-- Show error message if registration fails -->
     <?php if (!empty($error)): ?>

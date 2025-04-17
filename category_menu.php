@@ -52,13 +52,22 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="main.css">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
     <title>Browse Superheroes</title>
 </head>
 <body>
     <h1>Browse Superheroes</h1>
-    <nav>
-        <a href="index.php">Home</a>
-    </nav>
+    <nav class="d-flex justify-content-between">
+            <div>
+                <a href="index.php" id="home" class="mx-3">Home</a>
+                <a href="category_menu.php">Search</a>
+            </div>
+            <div>
+                <a href="register.php">Register</a>
+                <a href="login.php" class="mx-3">Admin Login</a>
+            </div>
+        </nav>
     <!-- Search Form and Category Filter -->
     <form method="GET" style="margin: 20px auto;">
         <input type="text" name="search" placeholder="Search by keyword" value="<?= htmlspecialchars($search) ?>"  style="padding: 8px;">

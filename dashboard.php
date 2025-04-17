@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// 🔒 CHECK FOR SESSION TIMEOUT
+// CHECK FOR SESSION TIMEOUT
 if (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT) {
     session_unset();
     session_destroy();
@@ -19,7 +19,7 @@ if (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT) {
     $_SESSION['last_activity'] = time();
 }
 
-// 🔒 CHECK FOR CROSS-TAB LOGOUT
+// CHECK FOR CROSS-TAB LOGOUT
 $logout_time = file_exists('logout_flag.txt') ? (int)file_get_contents('logout_flag.txt') : 0;
 
 if (isset($_SESSION['login_time']) && $_SESSION['login_time'] < $logout_time) {
@@ -29,13 +29,13 @@ if (isset($_SESSION['login_time']) && $_SESSION['login_time'] < $logout_time) {
     exit();
 }
 
-// 🔒 REDIRECT NON-ADMINS
+// REDIRECT NON-ADMINS
 if ($_SESSION['user_role'] !== 'admin') {
     header('Location: index.php');
     exit();
 }
 
-// ✅ Success message (show once)
+// Success message (show once)
 if (isset($_SESSION['login_success'])) {
     echo '<div id="success-message" style="color: green; font-weight: bold;">' . $_SESSION['login_success'] . '</div>';
     unset($_SESSION['login_success']);
@@ -290,6 +290,8 @@ if (isset($_GET['delete_superhero'])) {
     header("Location: dashboard.php");
     exit();
 }
+
+
 
 
 

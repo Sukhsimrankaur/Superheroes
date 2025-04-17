@@ -1,7 +1,6 @@
 <?php
 // Authentication is required to post
 require('db.php');
-require('authenticate.php');
 
 // Define the input_filter function
 function input_filter($data) {
@@ -53,17 +52,23 @@ endif;
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <link rel="stylesheet" type="text/css" href="main.css">
+       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
 
     <title>Add New Superhero</title>
 </head>
 <body>
     <h1>Add New Superhero</h1>
-          <nav>
-    <div>
-        <a href="index.php" id="home">Home</a>
-        <a href="superhero_profile.php">Add new Avenger</a>
-    </div>
-    </nav>
+          <nav class="d-flex justify-content-between">
+            <div>
+                <a href="index.php" id="home" class="mx-3">Home</a>
+                <a href="category_menu.php">Search</a>
+            </div>
+            <div>
+                <a href="register.php">Register</a>
+                <a href="login.php" class="mx-3">Admin Login</a>
+            </div>
+        </nav>
     <form method="POST">
         <label for="name">Name</label>
         <input type="text" name="name" id="name" required>

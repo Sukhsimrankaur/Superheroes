@@ -1,6 +1,5 @@
 <?php
 // Authentication is required for the editing 
-require('authenticate.php');
 require('db.php');
 
 // Check if hero id is valid
