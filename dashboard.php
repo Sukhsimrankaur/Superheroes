@@ -291,39 +291,6 @@ if (isset($_GET['delete_superhero'])) {
     exit();
 }
 
-if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-    die("Access denied.");
-}
-
-$comment_id = $_POST['comment_id'];
-$action = $_POST['action'];
-
-if ($action === 'hide') {
-    $stmt = $pdo->prepare("UPDATE comments SET status = 'hidden' WHERE comment_id = ?");
-    $stmt->execute([$comment_id]);
-
-} elseif ($action === 'delete') {
-    $stmt = $pdo->prepare("UPDATE comments SET status = 'deleted' WHERE comment_id = ?");
-    $stmt->execute([$comment_id]);
-
-} elseif ($action === 'disemvowel') {
-    // Fetch the original comment
-    $stmt = $pdo->prepare("SELECT comment_text FROM comments WHERE comment_id = ?");
-    $stmt->execute([$comment_id]);
-    $original = $stmt->fetchColumn();
-
-    // Remove vowels
-    $disemvoweled = preg_replace('/[aeiouAEIOU]/', '', $original);
-
-    // Update comment
-    $stmt = $pdo->prepare("UPDATE comments SET comment_text = ?, status = 'disemvoweled' WHERE comment_id = ?");
-    $stmt->execute([$disemvoweled, $comment_id]);
-}
-
-header("Location: admin_dashboard.php#moderate-comments");
-exit;
-
-
 
 
 ?>
@@ -637,42 +604,8 @@ exit;
     </div>
     </form>
 
-    // Fetch all comments from non-admin users
-$stmt = $pdo->prepare("
-    SELECT c.comment_id, u.user_name, c.comment_text, c.posted_at, c.status
-    FROM comments c
-    JOIN users u ON c.user_id = u.user_id
-    WHERE u.role != 'admin'
-    ORDER BY c.posted_at DESC
-");
-$stmt->execute();
-$comments = $stmt->fetchAll();
-?>
+    
 
-<section id="moderate-comments">
-  <h2> Moderate Comments</h2>
-  <table border="1" cellpadding="6">
-    <tr>
-      <th>User</th><th>Comment</th><th>Posted At</th><th>Status</th><th>Actions</th>
-    </tr>
-    <?php foreach ($comments as $comment): ?>
-    <tr>
-      <td><?= htmlspecialchars($comment['user_name']) ?></td>
-      <td><?= htmlspecialchars($comment['comment_text']) ?></td>
-      <td><?= $comment['posted_at'] ?></td>
-      <td><?= $comment['status'] ?></td>
-      <td>
-        <form action="moderate_action.php" method="post" style="display:inline;">
-          <input type="hidden" name="comment_id" value="<?= $comment['comment_id'] ?>">
-          <button name="action" value="hide">Hide</button>
-          <button name="action" value="delete">Delete</button>
-          <button name="action" value="disemvowel">Disemvowel</button>
-        </form>
-      </td>
-    </tr>
-    <?php endforeach; ?>
-  </table>
-</section>
 
     <h2>Registered Superheroes</h2>
 <table>
