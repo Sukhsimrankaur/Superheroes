@@ -2,6 +2,9 @@
 session_start();
 require 'db.php'; // database connection
 
+// Define the general fallback login credentials (hardcoded)
+$general_username = 'general_admin'; // Username for fallback login
+$general_password = 'general123'; // Password for fallback login
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
