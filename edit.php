@@ -25,20 +25,21 @@ if (!$hero) {
 
 // Define the input_filter function
 function input_filter($data) {
-    return htmlspecialchars(trim($data));
+    return htmlspecialchars(trim($data)); // Only sanitize non-HTML fields
 }
 
 // Handle form submission for update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // If the user clicked "Update Hero"
     if (isset($_POST['update'])) {
+        // Sanitize only the non-HTML fields
         $name = input_filter(trim($_POST['name']));
         $alias = input_filter(trim($_POST['alias']));
-        $bio = input_filter(trim($_POST['bio']));
-        $powers = input_filter(trim($_POST['powers']));
+        $bio = trim($_POST['bio']); // Raw HTML content, don't sanitize
+        $powers = trim($_POST['powers']); // Raw HTML content, don't sanitize
         $image_url = input_filter(trim($_POST['image_url']));
         $affiliation = input_filter(trim($_POST['affiliation']));
-        $category_id = input_filter(trim($_POST['category_id']));
+        $category_id = (int) $_POST['category_id'];
 
         // Validate inputs
         if (strlen($name) < 1 || strlen($bio) < 1 || strlen($powers) < 1) {
@@ -62,9 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
-
-    
-    }
+}
 
 // Retrieve categories for the dropdown
 $query = 'SELECT * FROM categories';
@@ -79,47 +78,46 @@ $categories = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main.css">
-     <!-- TinyMCE WYSIWYG CDN -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-        tinymce.init({
-            selector: 'textarea#wysiwyg', // We'll give textareas this class
-            height: 300,
-            menubar: false,
-            plugins: 'lists link image preview code',
-            toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist outdent indent | link image | code preview'
-        });
-    </script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
 
     <title>Edit Superhero Profile</title>
 </head>
 <body>
     <h1>Edit Superhero Profile</h1>
-    <nav>
-        <a href="index.php">Home</a>
-        <a href="superhero_profile.php?id=<?= $hero['superhero_id'] ?>">New Profile</a>
-    </nav>
+    <nav class="d-flex justify-content-between">
+            <div>
+                <a href="index.php" id="home" class="mx-3">Home</a>
+                <a href="category_menu.php">Search</a>
+            </div>
+            <div>
+                <a href="register.php">Register</a>
+                <a href="login.php" class="mx-3">Admin Login</a>
+            </div>
+        </nav>
     <form method="POST">
         <label for="name">Name</label>
-        <input type="text" name="name" id="name" class="wysiwyg" value="<?= htmlspecialchars($hero['name']) ?>" required>
+        <input type="text" name="name" id="name" value="<?= htmlspecialchars($hero['name']) ?>" required>
 
         <label for="alias">Alias</label>
-        <input type="text" name="alias" id="alias" class="wysiwyg" value="<?= htmlspecialchars($hero['alias']) ?>">
+        <input type="text" name="alias" id="alias" value="<?= htmlspecialchars($hero['alias']) ?>">
 
-        <label for="bio">Bio</label>
-        <textarea name="bio" id="bio" class="wysiwyg" required><?= htmlspecialchars($hero['bio']) ?></textarea>
+         <label for="bio">Bio</label>
+        <!-- Use a regular textarea for bio field -->
+        <textarea name="bio" id="bio" required><?= $hero['bio'] ?></textarea>
 
         <label for="powers">Powers</label>
-        <textarea name="powers" id="powers" class="wysiwyg" required><?= htmlspecialchars($hero['powers']) ?></textarea>
+        <!-- Use a regular textarea for powers field -->
+        <textarea name="powers" id="powers" required><?= $hero['powers'] ?></textarea>
 
         <label for="image_url">Image URL</label>
-        <input type="text" name="image_url" id="image_url" class="wysiwyg" value="<?= htmlspecialchars($hero['image_url']) ?>">
+        <input type="text" name="image_url" id="image_url" value="<?= htmlspecialchars($hero['image_url']) ?>">
 
         <label for="affiliation">Affiliation</label>
-        <input type="text" name="affiliation" id="affiliation"  class="wysiwyg"value="<?= htmlspecialchars($hero['affiliation']) ?>">
+        <input type="text" name="affiliation" id="affiliation" value="<?= htmlspecialchars($hero['affiliation']) ?>">
 
         <label for="category_id">Category</label>
-        <select name="category_id" id="category_id" class="wysiwyg">
+        <select name="category_id" id="category_id">
             <?php foreach ($categories as $category): ?>
                 <option value="<?= $category['category_id'] ?>" <?= ($hero['category_id'] == $category['category_id']) ? 'selected' : '' ?>>
                     <?= htmlspecialchars($category['category_name']) ?>
