@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+
 
 define('SESSION_TIMEOUT', 500); // 8 minutes
 
