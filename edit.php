@@ -2,8 +2,9 @@
 // Authentication is required for the editing 
 require('db.php');
 
-// Check if hero id is valid
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+$hero_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+if ($hero_id === false || $hero_id === null) {
     header('Location: index.php');
     exit();
 }

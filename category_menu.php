@@ -1,17 +1,26 @@
 <?php
 require 'db.php';
 
-// Get query params
-$search = $_GET['search'] ?? '';
-$selected_category = $_GET['category_id'] ?? '';
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
+// Sanitize text input
+$search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+// Validate category_id as integer
+$selected_category = filter_input(INPUT_GET, 'category_id', FILTER_VALIDATE_INT);
+if ($selected_category === false) {
+    $selected_category = null; // or some safe default
+}
+
+// Validate pagination page as integer, default to 1
+$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+if ($page === false || $page < 1) {
+    $page = 1;
+}
+
 $per_page = 5; // Results per page
 $offset = ($page - 1) * $per_page;
 
 $where = [];
 $params = [];
-
-
 
 // Search condition
 if (!empty($search)) {
@@ -52,26 +61,33 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="main.css">
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <title>Browse Superheroes</title>
 </head>
 <body>
     <h1>Browse Superheroes</h1>
     <nav class="d-flex justify-content-between">
-            <div>
-                <a href="index.php" id="home" class="mx-3">Home</a>
-                <a href="category_menu.php">Search</a>
-            </div>
-            <div>
-                <a href="register.php">Register</a>
-                <a href="login.php" class="mx-3">Admin Login</a>
-            </div>
-        </nav>
+        <div>
+            <a href="index.php" id="home" class="mx-3">Home</a>
+            <a href="category_menu.php">Search</a>
+        </div>
+        <div>
+            <a href="register.php">Register</a>
+            <a href="login.php" class="mx-3">Admin Login</a>
+        </div>
+    </nav>
+
     <!-- Search Form and Category Filter -->
+    <form id="filterForm" method="GET" style="margin: 20px auto;">
+        <input type="text" name="search" placeholder="Search by keyword" value="<?= htmlspecialchars($search) ?>" style="padding: 8px;">
+        
+        <!-- Submit button (Search functionality) -->
+        <button type="submit" style="padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px;">Search</button>
+    </form>
+
+    <!-- Category Filter Form (Separate from Search) -->
     <form method="GET" style="margin: 20px auto;">
-        <input type="text" name="search" placeholder="Search by keyword" value="<?= htmlspecialchars($search) ?>"  style="padding: 8px;">
-        <select name="category_id" style="padding: 8px;">
+        <select name="category_id" style="padding: 8px;" onchange="this.form.submit();">
             <option value="">All Categories</option>
             <?php foreach ($categories as $cat): ?>
                 <option value="<?= $cat['category_id'] ?>" <?= ($selected_category == $cat['category_id']) ? 'selected' : '' ?>>
@@ -79,10 +95,9 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </option>
             <?php endforeach; ?>
         </select>
-        <button type="submit" style="padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px;">Search</button>
     </form>
 
-    <!-- Display Categories -->
+    <!-- Display Categories for Quick Access -->
     <p style="text-align: center; font-size: 1.2rem; font-weight: bold; margin-top: 20px;">
         <?php foreach ($categories as $category): ?>
             <a href="non-admin_category.php?category_id=<?= htmlspecialchars($category['category_id']) ?>" 
@@ -90,7 +105,6 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
                onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'">
                 <?= htmlspecialchars($category['category_name']) ?>
             </a>
-            
         <?php endforeach; ?>
     </p>
 

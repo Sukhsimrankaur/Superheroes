@@ -51,12 +51,15 @@ if (isset($_GET['id'])) {
     // Handle comment submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete_token'])) {
         $comment = trim($_POST['comment'] ?? '');
-        $name = trim($_POST['name'] ?? '');
+$name = trim($_POST['name'] ?? '');
+if (empty($name)) {
+    $name = 'Anonymous' . rand(100, 999); // Auto-generate name if empty
+}
         $captcha_input = $_POST['captcha'] ?? '';
 
         if ($captcha_input !== ($_SESSION['captcha'] ?? '')) {
             $error = 'CAPTCHA incorrect. Please try again.';
-        } elseif (empty($comment) || empty($name)) {
+} elseif (empty($comment)) {
             $error = 'Name and comment are required.';
         } else {
             $deletion_token = bin2hex(random_bytes(16));
@@ -162,7 +165,7 @@ if (isset($_GET['id'])) {
 
                 <form method="POST">
                     <label for="name">Name:</label><br>
-                    <input type="text" name="name" id="name" value="<?= htmlspecialchars($name) ?>" required><br><br>
+<input type="text" name="name" id="name" value="<?= htmlspecialchars($name) ?>"><br><br>
 
                     <label for="comment">Comment:</label><br>
                     <textarea name="comment" id="comment" rows="4" required><?= htmlspecialchars($comment) ?></textarea><br><br>
