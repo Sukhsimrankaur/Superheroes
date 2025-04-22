@@ -1,6 +1,6 @@
 <?php
 session_start(); // REQUIRED for CAPTCHA session check
-
+require('db.php');
 
 // Get the superhero ID from the URL
 if (isset($_GET['id'])) {
