@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($user) {
         // Check if the user is an admin
         if ($user['role'] === 'admin' && password_verify($password, $user['password'])) {
-            // ✅ Admin login success — Set session
+            //  Admin login success — Set session
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['last_activity'] = time();
@@ -29,9 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: dashboard.php');
             exit();
         } else {
-            // ❌ If it's not an admin, proceed to the fallback general login
+            //  If it's not an admin, proceed to the fallback general login
             if ($username === $general_username && $password === $general_password) {
-                // ✅ General login credentials are valid — Set session
+                //  General login credentials are valid — Set session
                 $_SESSION['user_id'] = 0; // Arbitrary user ID for general login
                 $_SESSION['user_role'] = 'general'; // Fallback role for general login
                 $_SESSION['last_activity'] = time();
@@ -41,14 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: dashboard.php');
                 exit();
             } else {
-                // ❌ Invalid credentials
+                //  Invalid credentials
                 $_SESSION['error'] = "Invalid username or password.";
                 header('Location: login.php');
                 exit();
             }
         }
     } else {
-        // ❌ If user doesn't exist in the database, try the general credentials
+        //  If user doesn't exist in the database, try the general credentials
         if ($username === $general_username && $password === $general_password) {
             // ✅ General login credentials are valid — Set session
             $_SESSION['user_id'] = 0; // Arbitrary user ID for general login
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: dashboard.php');
             exit();
         } else {
-            // ❌ Invalid login
+            //  Invalid login
             $_SESSION['error'] = "Invalid username or password.";
             header('Location: login.php');
             exit();

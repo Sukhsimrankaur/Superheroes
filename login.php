@@ -5,8 +5,16 @@ require 'db.php'; // Include the database connection file
 $error = ''; // Initialize error message variable
 $success = ''; 
 
-// Check if the user is already logged in
-if (isset($_SESSION['user_id'])) {
+// Check if the user is already logged in as a regular user
+if (isset($_SESSION['user_id']) && $_SESSION['user_role'] !== 'admin') {
+    // Redirect to the index page if a regular user is logged in
+    header('Location: index.php');
+    exit();
+}
+
+// Check if the admin is already logged in
+if (isset($_SESSION['user_id']) && $_SESSION['user_role'] === 'admin') {
+    // Redirect to the admin dashboard if the admin is already logged in
     header('Location: dashboard.php');
     exit();
 }
@@ -21,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set session variables for general admin login
         $_SESSION['user_id'] = 1; // Set a generic ID for this general admin (use the actual user ID in production)
         $_SESSION['user_role'] = 'admin'; // Set the role to admin
+        $_SESSION['logged_in_username'] = 'admin'; // Save username
+        $_SESSION['success_message'] = "Welcome, Admin!"; // Admin message
         $_SESSION['last_activity'] = time(); // Store last activity time
         $_SESSION['login_time'] = time(); // Set login time for tracking
 
@@ -40,8 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Successful login
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['user_role'] = $user['role'];
+        $_SESSION['logged_in_username'] = $user['username']; // Save username
+        $_SESSION['success_message'] = "Welcome back, " . $user['username'] . "!";
         $_SESSION['last_activity'] = time();
-        $_SESSION['login_time'] = time();
+        $_SESSION['login_time'] = time(); // Set login time for tracking
 
         // Redirect to the dashboard
         header('Location: dashboard.php');
@@ -59,22 +71,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="main.css">
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <title>Login</title>
 </head>
 <body>
     <h1>Login</h1>
     <nav class="d-flex justify-content-between">
-            <div>
-                <a href="index.php" id="home" class="mx-3">Home</a>
-                <a href="category_menu.php">Search</a>
-            </div>
-            <div>
-                <a href="register.php">Register</a>
-                <a href="login.php" class="mx-3">Admin Login</a>
-            </div>
-        </nav>
+        <div>
+            <a href="index.php" id="home" class="mx-3">Home</a>
+            <a href="category_menu.php">Search</a>
+        </div>
+        <div>
+            <a href="register.php">Register</a>
+            <a href="login.php" class="mx-3">Admin Login</a>
+        </div>
+    </nav>
 
     <!-- Show error message if login fails -->
     <?php if (!empty($error)): ?>

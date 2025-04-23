@@ -55,7 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute();
 
                 // Set a success message in session to display on the next page
-                $_SESSION['success_message'] = "Registration successful!.";
+$_SESSION['success_message'] = "Registration successful!";
+$_SESSION['logged_in_username'] = $username; // Store username for display
+
 
                 // Redirect to index.php after successful registration
                 header('Location: index.php');
