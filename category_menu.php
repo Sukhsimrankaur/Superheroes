@@ -73,7 +73,6 @@ $categories = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div>
             <a href="register.php">Register</a>
-            <a href="login.php" class="mx-3">Admin Login</a>
         </div>
     </nav>
 

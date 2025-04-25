@@ -250,18 +250,19 @@ $categories = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
         <input type="text" name="image_url" id="image_url" value="<?= htmlspecialchars($hero['image_url']) ?>">
 
         <?php if (!empty($hero['image_url'])): ?>
-            <label>Current Image</label>
-            <img src="<?= htmlspecialchars($hero['image_url']) ?>" alt="Superhero Image">
-            <div>
-                <label for="delete_image">Delete Image</label>
-                <input type="checkbox" name="delete_image" id="delete_image" value="1">
-                <span>Check to delete the associated image.</span>
-            </div>
-        <?php else: ?>
-            <label for="image_file">Upload Image</label>
-            <input type="file" name="image_file" id="image_file">
-            <span>Optional: Upload an image file if no URL is provided.</span>
-        <?php endif; ?>
+    <label>Current Image</label>
+    <img src="<?= htmlspecialchars($hero['image_url']) ?>" alt="Superhero Image">
+    <div>
+        <label for="delete_image">Delete Image</label>
+        <input type="checkbox" name="delete_image" id="delete_image" value="1">
+        <span>Check to delete the associated image.</span>
+    </div>
+<?php endif; ?>
+
+<label for="image_file">Upload New Image</label>
+<input type="file" name="image_file" id="image_file">
+<span>Optional: Upload a new image file to replace the current one (if any).</span>
+
 
         <label for="affiliation">Affiliation</label>
         <input type="text" name="affiliation" id="affiliation" value="<?= htmlspecialchars($hero['affiliation']) ?>">
