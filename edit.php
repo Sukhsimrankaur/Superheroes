@@ -38,9 +38,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $alias = input_filter(trim($_POST['alias']));
         $bio = trim($_POST['bio']); // Raw HTML content, don't sanitize
         $powers = trim($_POST['powers']); // Raw HTML content, don't sanitize
-        $image_url = input_filter(trim($_POST['image_url']));
         $affiliation = input_filter(trim($_POST['affiliation']));
         $category_id = (int) $_POST['category_id'];
+
+        // Handle file upload
+        $image_url = null;
+        if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+            $upload_dir = 'uploads/';
+            $image_name = $_FILES['image_file']['name'];
+            $image_temp = $_FILES['image_file']['tmp_name'];
+            $image_extension = pathinfo($image_name, PATHINFO_EXTENSION);
+
+            // Validate image type
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif'];
+            if (in_array(strtolower($image_extension), $allowed_extensions)) {
+                // Generate a unique file name
+                $image_url = $upload_dir . uniqid('hero_') . '.' . $image_extension;
+
+                // Move the uploaded file to the uploads directory
+                if (move_uploaded_file($image_temp, $image_url)) {
+                    // If successful, the image URL will be updated
+                    // Optionally delete the old image file if it's replaced
+                    if (!empty($hero['image_url']) && file_exists($hero['image_url'])) {
+                        unlink($hero['image_url']);
+                    }
+
+
+                } else {
+                    $error = "Failed to upload the image.";
+                }
+            } else {
+                $error = "Invalid image file. Only JPG, JPEG, PNG, and GIF files are allowed.";
+            }
+        } elseif (!empty($_POST['image_url'])) {
+            // If an image URL is provided
+            $image_url = input_filter(trim($_POST['image_url']));
+        }
 
         // Validate inputs
         if (strlen($name) < 1 || strlen($bio) < 1 || strlen($powers) < 1) {
@@ -66,10 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
+
 // Retrieve categories for the dropdown
 $query = 'SELECT * FROM categories';
 $categories = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
@@ -78,41 +112,156 @@ $categories = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="main.css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-
-
     <title>Edit Superhero Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #222;
+            color: #fff;
+            margin-top: 40px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        form input,
+        form select,
+        form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        form input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        form button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        form button:hover {
+            background-color: #45a049;
+        }
+
+        form .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        form img {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: contain;
+            margin-top: 15px;
+        }
+
+        form div {
+            margin-top: 20px;
+        }
+
+        footer h5 {
+            font-size: 14px;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <h1>Edit Superhero Profile</h1>
     <nav class="d-flex justify-content-between">
-            <div>
-                <a href="index.php" id="home" class="mx-3">Home</a>
-                <a href="category_menu.php">Search</a>
-            </div>
-            <div>
-                <a href="register.php">Register</a>
-                <a href="login.php" class="mx-3">Admin Login</a>
-            </div>
-        </nav>
-    <form method="POST">
+        <div>
+            <a href="index.php" id="home" class="mx-3">Home</a>
+            <a href="category_menu.php">Search</a>
+        </div>
+        <div>
+            <a href="register.php">Register</a>
+            <a href="login.php" class="mx-3">Admin Login</a>
+        </div>
+    </nav>
+
+    <form method="POST" enctype="multipart/form-data">
         <label for="name">Name</label>
         <input type="text" name="name" id="name" value="<?= htmlspecialchars($hero['name']) ?>" required>
 
         <label for="alias">Alias</label>
         <input type="text" name="alias" id="alias" value="<?= htmlspecialchars($hero['alias']) ?>">
 
-         <label for="bio">Bio</label>
-        <!-- Use a regular textarea for bio field -->
+        <label for="bio">Bio</label>
         <textarea name="bio" id="bio" required><?= $hero['bio'] ?></textarea>
 
         <label for="powers">Powers</label>
-        <!-- Use a regular textarea for powers field -->
         <textarea name="powers" id="powers" required><?= $hero['powers'] ?></textarea>
 
         <label for="image_url">Image URL</label>
         <input type="text" name="image_url" id="image_url" value="<?= htmlspecialchars($hero['image_url']) ?>">
+
+        <?php if (!empty($hero['image_url'])): ?>
+            <label>Current Image</label>
+            <img src="<?= htmlspecialchars($hero['image_url']) ?>" alt="Superhero Image">
+            <div>
+                <label for="delete_image">Delete Image</label>
+                <input type="checkbox" name="delete_image" id="delete_image" value="1">
+                <span>Check to delete the associated image.</span>
+            </div>
+        <?php else: ?>
+            <label for="image_file">Upload Image</label>
+            <input type="file" name="image_file" id="image_file">
+            <span>Optional: Upload an image file if no URL is provided.</span>
+        <?php endif; ?>
 
         <label for="affiliation">Affiliation</label>
         <input type="text" name="affiliation" id="affiliation" value="<?= htmlspecialchars($hero['affiliation']) ?>">
@@ -128,7 +277,6 @@ $categories = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Update and Delete buttons -->
         <button type="submit" name="update">Update Hero</button>
-        <button type="submit" name="delete" onclick="return confirm('Are you sure you want to delete this superhero?');">Delete Hero</button>
     </form>
 
     <?php if (isset($error)): ?>

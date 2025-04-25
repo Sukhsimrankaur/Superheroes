@@ -211,23 +211,82 @@ function input_filter($data) {
     return htmlspecialchars(trim($data));
 }
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST'):
-    // Sanitize inputs
+function resizeImage($filePath) {
+    list($width, $height, $type) = getimagesize($filePath);
+    $maxWidth = 800;
+
+    if ($width > $maxWidth) {
+        $newWidth = $maxWidth;
+        $newHeight = ($height / $width) * $newWidth;
+
+        // Create the image resource based on file type
+        switch ($type) {
+            case IMAGETYPE_JPEG:
+                $image = imagecreatefromjpeg($filePath);
+                $outputFunction = 'imagejpeg';
+                break;
+            case IMAGETYPE_PNG:
+                $image = imagecreatefrompng($filePath);
+                $outputFunction = 'imagepng';
+                break;
+            case IMAGETYPE_GIF:
+                $image = imagecreatefromgif($filePath);
+                $outputFunction = 'imagegif';
+                break;
+            default:
+                throw new Exception("Unsupported image type");
+        }
+
+        // Resize the image
+        $resizedImage = imagecreatetruecolor($newWidth, $newHeight);
+        imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+        // Save the resized image back in the same format
+        $outputFunction($resizedImage, $filePath);
+
+        // Free up memory
+        imagedestroy($image);
+        imagedestroy($resizedImage);
+    }
+}
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Sanitize form inputs
     $name = input_filter($_POST['name']);
     $alias = input_filter($_POST['alias']);
     $bio = input_filter($_POST['bio']);
     $powers = input_filter($_POST['powers']);
-    $image_url = input_filter($_POST['image_url']);
     $affiliation = input_filter($_POST['affiliation']);
-    $category_id = $_POST['category_id']; // Get category ID from form
+    $category_id = $_POST['category_id'];
 
-    // Validate input
-    if (empty($name) || empty($alias) || empty($bio) || empty($powers) || empty($affiliation) || empty($category_id)):
-        $error = "All fields are required.";
-    else:
+    // Handle image URL (if provided)
+    $image_url = input_filter($_POST['image_url']);
+    if (empty($image_url) && isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        // Handle file upload if no URL is provided
+        $image = $_FILES['image'];
+        $imageInfo = getimagesize($image['tmp_name']);
+        
+        // Check if the uploaded file is an image
+        if ($imageInfo !== false) {
+            $uploadDirectory = 'uploads/';
+            $imageName = uniqid() . '.' . pathinfo($image['name'], PATHINFO_EXTENSION);
+            $targetPath = $uploadDirectory . $imageName;
+            
+            if (move_uploaded_file($image['tmp_name'], $targetPath)) {
+                resizeImage($targetPath);  // Resize image
+                $image_url = $targetPath;  // Use the upload path as image_url
+            } else {
+                $error = "Image upload failed.";
+            }
+        } else {
+            $error = "Uploaded file is not a valid image.";
+        }
+    }
+
+    // If no error, insert the superhero into the database
+    if (empty($error)) {
         try {
-            // Insert into the database using PDO
             $query = 'INSERT INTO superheroes (name, alias, bio, powers, image_url, affiliation, category_id) 
                       VALUES (:name, :alias, :bio, :powers, :image_url, :affiliation, :category_id)';
             $statement = $db->prepare($query);
@@ -235,19 +294,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'):
             $statement->bindParam(':alias', $alias, PDO::PARAM_STR);
             $statement->bindParam(':bio', $bio, PDO::PARAM_STR);
             $statement->bindParam(':powers', $powers, PDO::PARAM_STR);
-            $statement->bindParam(':image_url', $image_url, PDO::PARAM_STR);
+            $statement->bindParam(':image_url', $image_url, PDO::PARAM_STR);  // Use image URL (either uploaded or provided)
             $statement->bindParam(':affiliation', $affiliation, PDO::PARAM_STR);
             $statement->bindParam(':category_id', $category_id, PDO::PARAM_INT);
             $statement->execute();
-                $_SESSION['success_message'] = 'Superhero successfully created!';
-
+            
+            $_SESSION['success_message'] = 'Superhero successfully created!';
             header('Location: dashboard.php');
             exit();
         } catch (PDOException $e) {
             $error = "Database error: " . $e->getMessage();
         }
-    endif;
-endif;
+    }
+}
+
 
 
 // Default sort by name
@@ -564,7 +624,7 @@ if (isset($_GET['delete_superhero'])) {
     <h3>Add New Superhero</h3>
      <div class="form-section">
 
-    <form method="POST" >
+    <form method="POST" enctype="multipart/form-data">
         <label for="name">Name</label>
         <input type="text" name="name" id="name" required>
 
@@ -577,8 +637,13 @@ if (isset($_GET['delete_superhero'])) {
         <label for="powers">Powers</label>
         <input type="text" name="powers" id="powers" required>
 
-        <label for="image_url">Image URL</label>
-        <input type="text" name="image_url" id="image_url">
+         <!-- Image Upload -->
+    <label for="image">Upload Image:</label>
+    <input type="file" name="image" id="image">
+
+    <!-- Image URL -->
+    <label for="image_url">Or, Enter Image URL:</label>
+    <input type="text" name="image_url" id="image_url" placeholder="Enter image URL">
 
         <label for="affiliation">Affiliation</label>
         <input type="text" name="affiliation" id="affiliation" required>
